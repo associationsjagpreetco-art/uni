@@ -433,31 +433,13 @@ footer a:hover{color:white;}
 }
 .step-indicator.active{background:white;color:#111827;box-shadow:0 2px 8px rgba(0,0,0,.08);}
 
-/* Payment selectors */
-.payment-method-selector{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:15px;}
-.payment-option-card{
-  border:2px solid var(--border);border-radius:10px;padding:12px;cursor:pointer;transition:.2s;
+/* COD info box */
+.cod-info-box{
+  background:#fffbeb;border:2px solid #fbbf24;border-radius:12px;
+  padding:20px;text-align:center;margin-bottom:15px;
 }
-.payment-option-card:hover{border-color:#94a3b8;}
-.payment-option-card.selected{border-color:var(--green);background:#effbf1;}
-.payment-option-card h4{font-size:13px;font-weight:800;}
-.payment-details-box{
-  background:#f8fafc;border:1px solid var(--border);
-  border-radius:10px;padding:16px;margin-bottom:15px;
-}
-.qr-container{display:flex;flex-direction:column;align-items:center;gap:10px;}
-.qr-code-img{width:200px;height:200px;border:1px solid var(--border);border-radius:10px;}
-.bank-detail-row{
-  display:flex;justify-content:space-between;align-items:center;
-  padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;
-}
-.bank-detail-row:last-child{border-bottom:none;}
-.bank-detail-label{color:#64748b;font-weight:600;font-size:12px;}
-.bank-detail-val{font-weight:700;display:flex;align-items:center;gap:8px;}
-.copy-badge{
-  background:var(--green);color:white;padding:2px 8px;
-  border-radius:4px;font-size:10px;cursor:pointer;font-weight:800;
-}
+.cod-info-box h4{font-size:16px;font-weight:800;color:#92400e;margin-bottom:8px;}
+.cod-info-box p{font-size:13px;color:#78350f;line-height:1.5;}
 
 /* Auth tabs */
 .auth-tabs{display:flex;gap:4px;background:#f1f5f9;border-radius:10px;padding:4px;margin-bottom:18px;}
@@ -635,7 +617,7 @@ footer a:hover{color:white;}
         <div class="hero-bag">🎒</div>
         <div class="float-card one">⚡ Fast Delivery</div>
         <div class="float-card two">📚 Student Essentials</div>
-        <div class="float-card three">💳 UPI &amp; SBI Pay</div>
+        <div class="float-card three">💵 Cash on Delivery</div>
       </div>
     </section>
 
@@ -649,10 +631,10 @@ footer a:hover{color:white;}
         </div>
       </div>
       <div class="benefit">
-        <div class="benefit-icon">💳</div>
+        <div class="benefit-icon">💵</div>
         <div>
-          <strong>SBI &amp; UPI Payments</strong>
-          <p>GPay, PhonePe, Bank Transfer</p>
+          <strong>Cash on Delivery</strong>
+          <p>Pay when item arrives at your room</p>
         </div>
       </div>
       <div class="benefit">
@@ -869,11 +851,9 @@ footer a:hover{color:white;}
       </ul>
     </div>
     <div>
-      <h3>Payment Info</h3>
-      <p>SBI A/C: <strong style="color:#ffd600;">43626003401</strong></p>
-      <p>IFSC: <strong style="color:#ffd600;">SBIN0051455</strong></p>
-      <p>GPay: <strong style="color:#ffd600;">singhharpreet5975@okaxis</strong></p>
-      <p>PhonePe: <strong style="color:#ffd600;">7009918303@ybl</strong></p>
+      <h3>Payment</h3>
+      <p>💵 <strong style="color:#ffd600;">Cash on Delivery</strong></p>
+      <p style="color:#9ca3af;font-size:11px;margin-top:6px;">Pay when your order is delivered to your hostel room. No advance payment required.</p>
     </div>
   </div>
   <div class="footer-bottom">
@@ -1603,85 +1583,46 @@ function handleDeliveryFormSubmit(e) {
 }
 
 /* ==========================================================
-   CHECKOUT — STEP 2: SBI / UPI PAYMENT
+   CHECKOUT — STEP 2: CASH ON DELIVERY
 ========================================================== */
 function renderCheckoutStep2() {
   const subtotal = AppState.cart.reduce((s,i) => s+(i.price*i.qty), 0);
   const discount = Math.round((subtotal*AppState.discountPercent)/100);
   const total = Math.max(0, subtotal-discount);
-  const pay = PAYMENT_INFO;
-  const gpayId = pay.upi.gpay;
-  const phonepeId = pay.upi.phonepe;
-  const upiURI = `upi://pay?pa=${gpayId}&pn=Campus%20Store&am=${total}&cu=INR&tn=Order%20Booking`;
-  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiURI)}`;
 
   document.getElementById('checkoutModalContent').innerHTML = `
     <div class="checkout-steps">
       <div class="step-indicator" onclick="renderCheckoutStep1()" style="cursor:pointer;">✓ 1. Delivery Details</div>
-      <div class="step-indicator active">2. SBI / UPI Payment</div>
+      <div class="step-indicator active">2. Payment</div>
       <div class="step-indicator">3. Confirmation</div>
     </div>
 
     <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:13px;color:#1e40af;display:flex;justify-content:space-between;align-items:center;">
-      <span>Payable: <strong style="font-size:16px;color:#1e3a8a;">₹${total}</strong></span>
+      <span>Order Total: <strong style="font-size:16px;color:#1e3a8a;">₹${total}</strong></span>
       <span style="font-size:12px;">Delivering to: ${AppState.deliveryInfo.custHostel}, ${AppState.deliveryInfo.custFloor}, Rm ${AppState.deliveryInfo.custRoom}</span>
     </div>
 
-    <div class="payment-method-selector">
-      <div class="payment-option-card ${AppState.selectedPaymentMethod==='upi'?'selected':''}" onclick="selectPaymentTab('upi')">
-        <h4>⚡ UPI / Google Pay / PhonePe</h4>
-        <p style="font-size:11px;color:#64748b;margin-top:3px;">Scan QR or Pay via UPI ID</p>
-      </div>
-      <div class="payment-option-card ${AppState.selectedPaymentMethod==='bank'?'selected':''}" onclick="selectPaymentTab('bank')">
-        <h4>🏛️ SBI Direct Bank Transfer</h4>
-        <p style="font-size:11px;color:#64748b;margin-top:3px;">IMPS / NEFT / Net Banking</p>
-      </div>
+    <div class="cod-info-box">
+      <div style="font-size:48px;margin-bottom:10px;">💵</div>
+      <h4>Cash on Delivery</h4>
+      <p>Pay <strong>₹${total}</strong> in cash when your order arrives at your hostel room.<br>No advance payment needed — just confirm your order below.</p>
     </div>
 
-    <div id="upiPaymentView" style="display:${AppState.selectedPaymentMethod==='upi'?'block':'none'};">
-      <div class="payment-details-box">
-        <div class="qr-container">
-          <p style="font-size:12px;font-weight:700;color:#475569;">Scan &amp; Pay via GPay, PhonePe, Paytm</p>
-          <img src="${qrUrl}" alt="UPI QR Code ₹${total}" class="qr-code-img">
-          <div style="display:flex;flex-direction:column;gap:7px;width:100%;max-width:360px;margin-top:6px;">
-            <div class="bank-detail-row">
-              <span class="bank-detail-label">Google Pay ID:</span>
-              <span class="bank-detail-val">${gpayId} <span class="copy-badge" onclick="copyToClipboard('${gpayId}','GPay ID copied!')">Copy</span></span>
-            </div>
-            <div class="bank-detail-row">
-              <span class="bank-detail-label">PhonePe ID:</span>
-              <span class="bank-detail-val">${phonepeId} <span class="copy-badge" onclick="copyToClipboard('${phonepeId}','PhonePe ID copied!')">Copy</span></span>
-            </div>
-          </div>
-          <a href="${upiURI}" style="margin-top:10px;background:#111827;color:#fff;padding:8px 16px;border-radius:7px;font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:5px;">
-            Tap to Pay on Mobile UPI App →
-          </a>
-        </div>
+    <div style="background:#f8fafc;border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:16px;">
+      <h4 style="font-size:13px;font-weight:800;margin-bottom:10px;">Order Summary</h4>
+      ${AppState.cart.map(it=>`
+        <div style="display:flex;justify-content:space-between;font-size:13px;padding:5px 0;border-bottom:1px dashed #e2e8f0;">
+          <span>${it.name} <strong>×${it.qty}</strong></span>
+          <strong>₹${it.price*it.qty}</strong>
+        </div>`).join('')}
+      <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:800;color:#0c831f;margin-top:10px;">
+        <span>Total Payable (COD):</span><span>₹${total}</span>
       </div>
-    </div>
-
-    <div id="bankPaymentView" style="display:${AppState.selectedPaymentMethod==='bank'?'block':'none'};">
-      <div class="payment-details-box">
-        <h4 style="font-size:14px;font-weight:800;margin-bottom:12px;">Official SBI Bank Account Details</h4>
-        <div class="bank-detail-row"><span class="bank-detail-label">Bank Name:</span><span class="bank-detail-val">${pay.bank.bankName}</span></div>
-        <div class="bank-detail-row"><span class="bank-detail-label">Account Number:</span><span class="bank-detail-val"><strong style="color:#8b0000;font-size:15px;">${pay.bank.accountNumber}</strong> <span class="copy-badge" onclick="copyToClipboard('${pay.bank.accountNumber}','Account No copied!')">Copy</span></span></div>
-        <div class="bank-detail-row"><span class="bank-detail-label">Account Type:</span><span class="bank-detail-val">${pay.bank.accountType}</span></div>
-        <div class="bank-detail-row"><span class="bank-detail-label">IFSC Code:</span><span class="bank-detail-val"><strong>${pay.bank.ifscCode}</strong> <span class="copy-badge" onclick="copyToClipboard('${pay.bank.ifscCode}','IFSC copied!')">Copy</span></span></div>
-        <div class="bank-detail-row"><span class="bank-detail-label">Beneficiary:</span><span class="bank-detail-val">${pay.bank.accountHolder}</span></div>
-      </div>
+      <div style="font-size:11px;color:#64748b;margin-top:5px;">🚚 Free hostel delivery · Pay in cash at door</div>
     </div>
 
     <form id="paymentVerificationForm" onsubmit="handleFinalPaymentSubmit(event)">
-      <div class="form-group">
-        <label>Enter 12-Digit UPI Ref / UTR / Transaction ID *</label>
-        <input type="text" id="transactionRef" class="form-input" required placeholder="e.g. 423891024892 or IMPS Reference" maxlength="20">
-        <span style="font-size:11px;color:#64748b;">Found in your Google Pay, PhonePe, or SBI Netbanking receipt.</span>
-      </div>
-      <div class="form-group">
-        <label>Optional: Upload Payment Screenshot</label>
-        <input type="file" id="paymentScreenshot" class="form-input" accept="image/*" style="padding:6px;">
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:18px;gap:10px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;gap:10px;">
         <button type="button" onclick="renderCheckoutStep1()" style="background:#e2e8f0;color:#334155;padding:11px 16px;border-radius:8px;font-weight:700;">← Back</button>
         <button type="submit" id="btnConfirmPay" style="background:#10b981;color:#fff;padding:12px 24px;border-radius:8px;font-weight:800;font-size:15px;display:flex;align-items:center;gap:7px;box-shadow:0 4px 14px rgba(16,185,129,.3);">
           <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
@@ -1691,21 +1632,14 @@ function renderCheckoutStep2() {
     </form>`;
 }
 
-function selectPaymentTab(method) {
-  AppState.selectedPaymentMethod = method;
-  renderCheckoutStep2();
-}
-
 /* ==========================================================
    CHECKOUT — STEP 3: ORDER SUCCESS
 ========================================================== */
 function handleFinalPaymentSubmit(e) {
   e.preventDefault();
-  const txRef = document.getElementById('transactionRef').value.trim();
-  if (!txRef) { showToast('Please enter your Transaction / UTR reference number','error'); return; }
 
   const btn = document.getElementById('btnConfirmPay');
-  if (btn) { btn.disabled=true; btn.innerHTML='<span>Processing & Sending Alerts…</span>'; }
+  if (btn) { btn.disabled=true; btn.innerHTML='<span>Processing…</span>'; }
 
   const subtotal = AppState.cart.reduce((s,i) => s+(i.price*i.qty), 0);
   const discount = Math.round((subtotal*AppState.discountPercent)/100);
@@ -1717,8 +1651,8 @@ function handleFinalPaymentSubmit(e) {
     orderId, orderTime,
     items:[...AppState.cart],
     subtotal, discount, total,
-    paymentMethod: AppState.selectedPaymentMethod==='upi'?'UPI (Google Pay / PhonePe)':'SBI Direct Bank Transfer',
-    transactionRef: txRef,
+    paymentMethod: 'Cash on Delivery (COD)',
+    transactionRef: 'COD',
     student: {...AppState.deliveryInfo}
   };
   AppState.lastOrder = orderData;
@@ -1734,7 +1668,7 @@ function handleFinalPaymentSubmit(e) {
 
 function sendAutomatedEmail(order) {
   const itemsSummary = order.items.map((it,i) => (i+1)+'. '+it.name+' (Qty: '+it.qty+') - Rs.'+(it.price*it.qty)).join('\n');
-  const autoresponse = `Hi ${order.student.custName},\n\nYour order on Campus Store has been placed successfully!\n\nOrder ID: #${order.orderId}\nTotal: Rs.${order.total} (Free Campus Delivery)\nDelivery: ${order.student.custHostel}, ${order.student.custFloor||'Floor 1'}, Room ${order.student.custRoom}\nEstimated: Within 2 Business Days\n\nItems:\n${itemsSummary}\n\nPayment: ${order.paymentMethod}\nUTR: ${order.transactionRef}\n\nThank you for choosing Campus Store!`;
+  const autoresponse = `Hi ${order.student.custName},\n\nYour order on Campus Store has been placed successfully!\n\nOrder ID: #${order.orderId}\nTotal: Rs.${order.total} (Free Campus Delivery)\nDelivery: ${order.student.custHostel}, ${order.student.custFloor||'Floor 1'}, Room ${order.student.custRoom}\nEstimated: Within 2 Business Days\n\nItems:\n${itemsSummary}\n\nPayment: Cash on Delivery (COD) - Pay in cash when delivered.\n\nThank you for choosing Campus Store!`;
 
   fetch('https://formsubmit.co/ajax/singhharpreet5975@gmail.com', {
     method:'POST',
@@ -1759,8 +1693,8 @@ function sendAutomatedEmail(order) {
       'Special Notes': order.student.custNotes||'N/A',
       'Items Ordered': itemsSummary,
       'Grand Total': 'Rs.'+order.total+' (Free Delivery)',
-      'Payment Mode': order.paymentMethod,
-      'UTR / Ref No': order.transactionRef
+      'Payment Mode': 'Cash on Delivery (COD)',
+      'Payment Note': 'Collect cash at hostel room delivery'
     })
   }).then(r=>r.json()).then(d=>console.log('Email sent:',d)).catch(err=>console.warn('Email error:',err));
 }
@@ -1774,10 +1708,10 @@ function renderOrderSuccessScreen(order) {
     </div>`).join('');
 
   const emailSubject = `Order Placed: Campus Store #${order.orderId} - ₹${order.total}`;
-  const emailBody = `Hi ${order.student.custName},\n\nYour order is confirmed!\n\nOrder ID: #${order.orderId}\nPlaced: ${order.orderTime}\nStudent: ${order.student.custName} (${order.student.custUid})\nContact: ${order.student.custPhone}\nDelivery: ${order.student.custHostel}, ${order.student.custFloor||'Floor 1'}, Room ${order.student.custRoom}\n\nItems:\n${itemsText}\n\nTotal: ₹${order.total} (Free Campus Delivery)\nPayment: ${order.paymentMethod}\nUTR: ${order.transactionRef}\n\nThank you for choosing Campus Store!`;
+  const emailBody = `Hi ${order.student.custName},\n\nYour order is confirmed!\n\nOrder ID: #${order.orderId}\nPlaced: ${order.orderTime}\nStudent: ${order.student.custName} (${order.student.custUid})\nContact: ${order.student.custPhone}\nDelivery: ${order.student.custHostel}, ${order.student.custFloor||'Floor 1'}, Room ${order.student.custRoom}\n\nItems:\n${itemsText}\n\nTotal: ₹${order.total} (Free Campus Delivery)\nPayment: Cash on Delivery (COD) - Pay in cash when delivered.\n\nThank you for choosing Campus Store!`;
   const mailtoUrl = `mailto:${order.student.custEmail||'singhharpreet5975@gmail.com'}?cc=singhharpreet5975@gmail.com&subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
 
-  const waMsg = `🎓 *NEW CAMPUS ORDER BOOKING*\n━━━━━━━━━━━━━━━━━━━━━━\n📦 *Order ID:* ${order.orderId}\n📅 *Date/Time:* ${order.orderTime}\n👤 *Student:* ${order.student.custName}\n🆔 *Student ID:* ${order.student.custUid}\n📞 *Phone:* ${order.student.custPhone}\n✉️ *Email:* ${order.student.custEmail}\n🏢 *Hostel & Wing:* ${order.student.custHostel}\n📶 *Floor:* ${order.student.custFloor||'Floor 1'}\n🚪 *Room No:* ${order.student.custRoom}\n📝 *Notes:* ${order.student.custNotes||'N/A'}\n━━━━━━━━━━━━━━━━━━━━━━\n🛒 *ITEMS:*\n${itemsText}\n━━━━━━━━━━━━━━━━━━━━━━\n💰 *Total:* ₹${order.total} (Free Delivery)\n💳 *Payment:* ${order.paymentMethod}\n🔢 *UTR:* ${order.transactionRef}\n━━━━━━━━━━━━━━━━━━━━━━\n📍 *Action:* Verify payment & dispatch to room within 2 business days.`;
+  const waMsg = `🎓 *NEW CAMPUS ORDER BOOKING*\n━━━━━━━━━━━━━━━━━━━━━━\n📦 *Order ID:* ${order.orderId}\n📅 *Date/Time:* ${order.orderTime}\n👤 *Student:* ${order.student.custName}\n🆔 *Student ID:* ${order.student.custUid}\n📞 *Phone:* ${order.student.custPhone}\n✉️ *Email:* ${order.student.custEmail}\n🏢 *Hostel & Wing:* ${order.student.custHostel}\n📶 *Floor:* ${order.student.custFloor||'Floor 1'}\n🚪 *Room No:* ${order.student.custRoom}\n📝 *Notes:* ${order.student.custNotes||'N/A'}\n━━━━━━━━━━━━━━━━━━━━━━\n🛒 *ITEMS:*\n${itemsText}\n━━━━━━━━━━━━━━━━━━━━━━\n💰 *Total:* ₹${order.total} (Free Delivery)\n💵 *Payment:* Cash on Delivery (COD)\n━━━━━━━━━━━━━━━━━━━━━━\n📍 *Action:* Dispatch to room within 2 business days. Collect ₹${order.total} cash on delivery.`;
   const waUrl = `https://wa.me/917009918303?text=${encodeURIComponent(waMsg)}`;
 
   try { window.open(waUrl,'_blank'); } catch(e){ console.log('Popup blocked'); }
