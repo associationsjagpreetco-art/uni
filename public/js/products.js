@@ -453,17 +453,6 @@ const PRODUCTS_DATA = [
 ];
 
 const PAYMENT_INFO = {
-  bank: {
-    bankName: "State Bank of India (SBI)",
-    accountNumber: "43626003401",
-    accountType: "Saving",
-    ifscCode: "SBIN0051455",
-    accountHolder: "Harpreet Singh / Campus Store"
-  },
-  upi: {
-    gpay: "singhharpreet5975@okaxis",
-    phonepe: "7009918303@ybl"
-  },
   fulfillmentContacts: {
     emails: ["singhharpreet5975@gmail.com"],
     supportEmail: "singhharpreet5975@gmail.com",
